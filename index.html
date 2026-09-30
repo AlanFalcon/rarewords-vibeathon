@@ -3,193 +3,147 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#efe8dc">
+<meta name="theme-color" content="#d6d6d3">
 <title>RareWords — Simulated Preview</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --paper:#efe8dc; --card:#f8f4ec; --ink:#1d1a16; --dim:#6f665a; --rule:#d9cfbf;
-    --tile:#fbf6ea; --tile-edge:#cbbfa9; --red:#c8412a; --teal:#1d6b73; --gold:#a8791a;
-    --shadow:0 1px 0 var(--tile-edge), 0 2px 0 #b7aa92, 0 3px 6px rgba(60,40,10,.12);
-    --serif:"Fraunces", Georgia, serif; --sans:"IBM Plex Sans", system-ui, sans-serif; --mono:"IBM Plex Mono", ui-monospace, monospace;
-  }
-  @media (prefers-color-scheme: dark){
-    :root{ --paper:#16140f; --card:#1f1c16; --ink:#efe7d8; --dim:#a39883; --rule:#35302a;
-      --tile:#2a261f; --tile-edge:#453e33; --red:#ef6a4f; --teal:#5fb3b9; --gold:#e0b04e;
-      --shadow:0 1px 0 var(--tile-edge), 0 2px 0 #0c0b08, 0 3px 8px rgba(0,0,0,.4); }
-  }
+  /* RW-1: a pocket word machine. A colour LED dot-matrix display (pinball DMD) above
+     hardware controls. Colour has one job everywhere: it is the OWNER of a letter or word.
+     Signal green = you, white = builder vault, every other colour = another player. */
+  :root{ --body:#d6d6d3; --face:#e9e9e6; --key:#f6f6f4; --keyedge:#b9b9b4; --ink:#161616; --dim:#5e5e5a;
+    --orange:#ff5a1f; --blue:#2f6bff; --well:#0b0b0b;
+    --sans:system-ui,-apple-system,"Helvetica Neue",sans-serif; --mono:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --body:#1c1c1c; --face:#262626; --key:#333331; --keyedge:#111; --ink:#ececea; --dim:#9a9a95; } }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
-  html,body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); overflow-x:hidden}
-  body{padding:0 16px calc(96px + env(safe-area-inset-bottom)); max-width:560px; margin:0 auto; font-size:16px; line-height:1.5; -webkit-text-size-adjust:100%}
-  button{font:inherit; color:inherit}
+  html{-webkit-text-size-adjust:100%; text-size-adjust:100%}
+  html,body{margin:0; background:var(--body); color:var(--ink); overflow-x:hidden}
+  body{font:15px/1.45 var(--sans); max-width:520px; margin:0 auto; padding:max(14px,env(safe-area-inset-top)) 14px 40px}
+  button{font:inherit; color:inherit; -webkit-user-select:none; user-select:none}
 
-  header{padding:28px 0 8px}
-  .mark{display:flex; gap:4px; margin-bottom:10px}
-  .brand{font-family:var(--serif); font-weight:900; font-size:40px; letter-spacing:-.02em; line-height:1; margin:0}
-  .brand em{font-style:normal; color:var(--red)}
-  .stamp{display:inline-block; margin-top:12px; font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
-    color:var(--red); border:1.5px solid var(--red); border-radius:3px; padding:4px 8px; transform:rotate(-1.5deg)}
-  .lede{color:var(--dim); font-size:15px; margin:14px 0 0}
+  .lbl{font:600 10px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--dim)}
+  .head{display:flex; justify-content:space-between; align-items:baseline; margin:4px 2px 10px}
+  .head b{font:700 15px var(--sans); letter-spacing:.02em}
+  .head .sim{color:var(--orange)}
 
-  .bal{position:sticky; top:0; z-index:5; background:var(--paper); display:flex; justify-content:space-between; align-items:baseline;
-    padding:12px 0; border-bottom:1px solid var(--rule); margin:18px 0 0; font-family:var(--mono); font-size:13px; color:var(--dim)}
-  .bal b{font-size:18px; color:var(--ink); font-weight:600}
-  .bal .delta{margin-left:6px; font-size:12px}
-  .bal .up{color:var(--teal)} .bal .down{color:var(--red)}
+  .dmd{background:var(--well); border-radius:10px; padding:10px; box-shadow:inset 0 2px 8px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.4)}
+  .dmd canvas{display:block; width:100%; aspect-ratio:4/1; image-rendering:auto}
+  .simline{margin:8px 2px 0; font-size:12px; color:var(--dim)}
+  .simline b{color:var(--orange)}
 
-  section{padding:26px 0 8px; border-bottom:1px solid var(--rule)}
-  h2{font-family:var(--serif); font-weight:700; font-size:24px; margin:0 0 4px; letter-spacing:-.01em}
-  h2 .n{font-family:var(--mono); font-size:12px; color:var(--red); font-weight:600; vertical-align:middle; margin-right:8px; letter-spacing:.05em}
-  .sub{color:var(--dim); font-size:14px; margin:0 0 16px}
+  .deck{display:grid; grid-template-columns:1fr auto auto; gap:14px; align-items:center; margin:18px 0 6px}
+  .slots{display:grid; gap:6px; min-width:0}
+  .slot{display:flex; align-items:center; gap:8px; min-width:0; width:100%; height:38px; padding:0 10px; border-radius:6px; border:0;
+    background:var(--well); color:#eee; cursor:pointer; text-align:left}
+  .slot .k{font:600 10px var(--sans); color:#777; letter-spacing:.08em}
+  .slot .v{font:14px "Silkscreen",var(--mono); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0}
+  .slot.on{box-shadow:0 0 0 2px var(--ink)}
+  .knob{display:grid; justify-items:center; gap:6px}
+  .knob button{width:68px; height:68px; border-radius:50%; border:0; cursor:pointer; background:var(--c);
+    box-shadow:inset 0 -5px 0 rgba(0,0,0,.22), inset 0 3px 0 rgba(255,255,255,.35), 0 3px 0 var(--keyedge), 0 6px 14px rgba(0,0,0,.18)}
+  .knob button:active:not(:disabled){transform:translateY(2px); box-shadow:inset 0 -3px 0 rgba(0,0,0,.22), inset 0 3px 0 rgba(255,255,255,.35), 0 1px 0 var(--keyedge)}
+  .knob button:disabled{background:#9d9d99; cursor:default}
+  .knob button:focus-visible,.key:focus-visible,.slot:focus-visible,.seg button:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
 
-  .tiles{display:flex; flex-wrap:wrap; gap:4px}
-  .tiles.c{justify-content:center}
-  .tile{display:inline-grid; place-items:center; min-width:30px; height:34px; padding:0 2px; background:var(--tile); border-radius:5px;
-    box-shadow:var(--shadow); font-family:var(--serif); font-weight:700; font-size:19px; text-transform:uppercase; line-height:1}
-  .tile.lg{min-width:40px; height:46px; font-size:26px; border-radius:7px}
-  .word{display:inline-flex; padding:6px; border-radius:8px; border:1px solid transparent; background:none; cursor:pointer}
-  .word .tiles{gap:2px}
-  .word .tile{min-width:24px; height:28px; font-size:15px; border-radius:4px}
-  .word:active{transform:translateY(1px)}
-  .word.sel{border-color:var(--red)}
+  .typed{display:flex; gap:6px; margin:10px 0 0}
+  .typed input{flex:1; min-width:0; height:40px; padding:0 10px; font:16px var(--mono); border:0; border-radius:6px; background:var(--face); color:var(--ink); box-shadow:inset 0 1px 3px rgba(0,0,0,.18)}
+  .typed button{border:0; border-radius:6px; padding:0 14px; background:var(--key); box-shadow:0 2px 0 var(--keyedge); cursor:pointer; font-weight:600; font-size:13px}
+  .msg{min-height:20px; margin:8px 2px 0; font-size:13px; color:var(--dim)}
+  .msg.err{color:#d93a1a} @media (prefers-color-scheme: dark){ .msg.err{color:#ff7a5c} }
 
-  .reveal{min-height:120px; display:grid; place-items:center; text-align:center; padding:18px 10px; margin-bottom:14px;
-    background:var(--card); border:1px solid var(--rule); border-radius:12px}
-  .reveal .empty{color:var(--dim); font-size:14px}
-  .rar{display:block; margin-top:12px; font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase}
-  .rar.common{color:var(--dim)} .rar.rare{color:var(--teal)} .rar.epic{color:var(--gold)}
-  .pop .tile{animation:drop .42s cubic-bezier(.2,.9,.3,1.3) both}
-  @keyframes drop{from{transform:translateY(-14px) rotate(-6deg); opacity:0} to{transform:none; opacity:1}}
-  @media (prefers-reduced-motion: reduce){ .pop .tile{animation:none} }
+  .seg{display:flex; background:var(--face); border-radius:8px; padding:3px; gap:3px; margin:18px 0 10px}
+  .seg button{flex:1; border:0; background:none; border-radius:6px; padding:8px 0; font:600 11px var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--dim); cursor:pointer}
+  .seg button.on{background:var(--key); color:var(--ink); box-shadow:0 1px 0 var(--keyedge)}
+  .keys{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px}
+  .keys.words{display:flex; flex-wrap:wrap}
+  .key{position:relative; height:46px; min-width:0; border:0; border-radius:7px; background:var(--key); cursor:pointer; padding:0 10px;
+    font:600 17px var(--sans); text-transform:uppercase; box-shadow:0 3px 0 var(--keyedge), 0 4px 8px rgba(0,0,0,.08)}
+  .keys.words .key{font-size:13px; height:40px; text-transform:lowercase; font-family:var(--mono)}
+  .key:active{transform:translateY(2px); box-shadow:0 1px 0 var(--keyedge)}
+  .key::after{content:""; position:absolute; top:6px; right:6px; width:6px; height:6px; border-radius:50%; background:var(--led); box-shadow:0 0 0 1px rgba(0,0,0,.28), 0 0 6px var(--led)}
+  .key.sel{box-shadow:0 0 0 2px var(--ink), 0 3px 0 var(--keyedge)}
+  .note{font-size:13px; color:var(--dim); margin:0 2px 10px}
+  .legend{display:flex; flex-wrap:wrap; gap:4px 14px; margin:12px 2px 0; font-size:12px; color:var(--dim)}
+  .dot{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; background:var(--led); box-shadow:0 0 5px var(--led); vertical-align:0}
 
-  .btn{display:block; width:100%; border:0; border-radius:12px; padding:14px 16px; font-weight:600; font-size:17px; cursor:pointer;
-    background:var(--ink); color:var(--paper)}
-  .btn small{display:block; font-family:var(--mono); font-weight:400; font-size:11px; opacity:.7; margin-top:2px; letter-spacing:.04em}
-  .btn:disabled{opacity:.35}
-  .btn.red{background:var(--red); color:#fff}
+  .tape{margin-top:12px; background:#fbfbf8; color:#161616; font:12.5px var(--mono); padding:10px 12px; border-radius:2px;
+    box-shadow:0 2px 6px rgba(0,0,0,.12)}
+  .tape div{display:flex; justify-content:space-between; gap:10px; padding:2px 0}
+  .tape .l{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .tape .top{border-bottom:1px dashed #999; padding-bottom:5px; margin-bottom:3px; font-weight:600}
 
-  details{margin-top:12px; font-size:14px; color:var(--dim)}
-  summary{cursor:pointer; font-family:var(--mono); font-size:12px; letter-spacing:.05em; padding:6px 0}
-  table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:13px}
-  td{padding:6px 0; border-bottom:1px dashed var(--rule)} td:last-child{text-align:right; color:var(--ink)}
-
-  .slots{display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:8px; align-items:center}
-  .slot{min-height:64px; border:1.5px dashed var(--tile-edge); border-radius:10px; display:grid; place-items:center; padding:8px;
-    background:none; cursor:pointer; width:100%; min-width:0}
-  .slot .tile{min-width:20px; height:26px; font-size:14px}
-  .slot.active{border-color:var(--red); border-style:solid}
-  .slot.filled{background:var(--card)}
-  .slot .ph{color:var(--dim); font-size:13px}
-  .plus{font-family:var(--serif); font-size:26px; color:var(--dim)}
-  .typed{display:flex; gap:8px; margin-top:10px}
-  .typed input{flex:1; min-width:0; font:16px var(--mono); padding:12px; border-radius:10px; border:1px solid var(--rule); background:var(--card); color:var(--ink)}
-  .typed button{border:1px solid var(--rule); background:var(--card); border-radius:10px; padding:0 14px; font-size:14px; cursor:pointer}
-  .preview{margin:14px 0; min-height:40px; display:flex; align-items:center; justify-content:center}
-  .msg{font-size:14px; margin:10px 0 0; min-height:21px}
-  .msg.err{color:var(--red)}
-  .receipt{font-family:var(--mono); font-size:12.5px; background:var(--card); border:1px solid var(--rule); border-radius:10px; padding:10px 12px; margin-top:10px}
-  .receipt div{display:flex; justify-content:space-between; gap:10px; padding:2px 0}
-  .receipt .who{color:var(--dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-
-  .tabs{display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap}
-  .tab{border:1px solid var(--rule); background:none; border-radius:999px; padding:6px 14px; font-size:14px; cursor:pointer}
-  .tab.on{background:var(--ink); color:var(--paper); border-color:var(--ink)}
-  .list{display:flex; flex-wrap:wrap; gap:2px; margin:0 -6px}
-  .own{font-size:12px; color:var(--dim); font-family:var(--mono); padding:0 0 8px}
-  .log{font-family:var(--mono); font-size:12px; color:var(--dim); margin-top:8px}
-  .log div{padding:6px 0; border-bottom:1px dashed var(--rule)}
-  .checks{list-style:none; padding:0; margin:8px 0 0; font-size:14px}
-  .checks li{padding:6px 0 6px 26px; position:relative; border-bottom:1px dashed var(--rule)}
-  .checks li::before{position:absolute; left:0; font-family:var(--mono)}
-  .checks .y::before{content:"✓"; color:var(--teal)} .checks .n::before{content:"○"; color:var(--dim)}
-  footer{padding:24px 0; color:var(--dim); font-size:13px}
-  footer a{color:inherit}
-
-  .dock{position:fixed; left:0; right:0; bottom:0; z-index:10; padding:10px 16px calc(10px + env(safe-area-inset-bottom));
-    background:linear-gradient(to top, var(--paper) 70%, transparent); display:none}
-  .dock .btn{max-width:528px; margin:0 auto; box-shadow:0 6px 20px rgba(0,0,0,.18)}
+  details{margin-top:18px; font-size:13px; color:var(--dim)}
+  summary{cursor:pointer; padding:8px 2px; font:600 11px var(--sans); letter-spacing:.08em; text-transform:uppercase}
+  table{width:100%; border-collapse:collapse; font:12.5px var(--mono)}
+  td{padding:5px 0; border-bottom:1px solid rgba(0,0,0,.08)} td:last-child{text-align:right; color:var(--ink)}
+  .log{font:12px var(--mono)} .log div{padding:4px 0; border-bottom:1px solid rgba(0,0,0,.08)}
+  .checks{list-style:none; margin:0; padding:0; font-size:13px; color:var(--ink)}
+  .checks li{padding:6px 0 6px 20px; position:relative; border-bottom:1px solid rgba(0,0,0,.08)}
+  .checks li::before{content:""; position:absolute; left:2px; top:11px; width:8px; height:8px; border-radius:50%}
+  .checks .y::before{background:#35d07f; box-shadow:0 0 5px #35d07f} .checks .n::before{background:#777}
+  footer{margin-top:22px; font-size:12px; color:var(--dim)} footer a{color:inherit}
+  .sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="mark tiles" aria-hidden="true"><span class="tile">R</span><span class="tile">W</span></div>
-  <h1 class="brand">Rare<em>Words</em></h1>
-  <span class="stamp">Simulated preview · play money · no wallet</span>
-  <p class="lede">Sacrifice a tier-4 Gen 5 Rare Friend to draw a word. Forge any two registered words into a new one. Every word is a 1/1, and its owner earns RF whenever someone builds on it.</p>
-</header>
+<div class="head"><b>RareWords</b><span class="lbl">RW-1 · <span class="sim">simulated</span></span></div>
 
-<div class="bal" aria-live="polite">
-  <span>Play RF <span class="delta" id="delta"></span></span>
-  <b id="bal">10,000</b>
-</div>
+<div class="dmd"><canvas id="dmd" width="1024" height="256" aria-hidden="true"></canvas></div>
+<p class="sr" id="say" aria-live="polite"></p>
+<p class="simline"><b>Simulated preview.</b> Play RF only. No wallet, and no Rare Friend is really locked.</p>
 
-<section id="roll">
-  <h2><span class="n">01</span>Draw</h2>
-  <p class="sub">Lock a tier-4 Gen 5 forever (simulated) and draw from the weighted pool.</p>
-  <div class="reveal" id="reveal"><span class="empty">Your first draw lands here.</span></div>
-  <button class="btn" id="sac">Sacrifice a Gen 5<small>SIMULATED · NO NFT IS LOCKED</small></button>
-  <details>
-    <summary>ODDS &amp; RULES</summary>
-    <table>
-      <tr><td>Common word</td><td>~89%</td></tr>
-      <tr><td>Rare word</td><td>~10%</td></tr>
-      <tr><td>Epic word</td><td>~0.79%</td></tr>
-      <tr><td>Consonant 1/1</td><td>~0.2%</td></tr>
-      <tr><td>The letter s (1/1 chase)</td><td>~0.01%</td></tr>
-    </table>
-    <p>Letters draw without replacement and word draws skip registered words. In this demo world every letter and “-” is already minted (vowels and “-” by the builder vault, consonants by other players), so a letter roll falls through to a common word.</p>
-  </details>
-</section>
-
-<section id="forge">
-  <h2><span class="n">02</span>Forge</h2>
-  <p class="sub">Tap a slot, then tap any word or letter in the registry below. Inputs can be anyone’s, and both survive.</p>
+<div class="deck">
   <div class="slots">
-    <button class="slot active" id="s0"><span class="ph">First word</span></button>
-    <span class="plus">+</span>
-    <button class="slot" id="s1"><span class="ph">Second word</span></button>
+    <button class="slot on" id="s0"><span class="k">A</span><span class="v"></span></button>
+    <button class="slot" id="s1"><span class="k">B</span><span class="v"></span></button>
   </div>
-  <form class="typed" id="typed" autocomplete="off">
-    <input id="typeIn" placeholder="or type a word" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done">
-    <button type="submit">Add</button>
-  </form>
-  <div class="preview" id="preview"></div>
-  <button class="btn red" id="forgeBtn" disabled>Forge<small>1,000 PLAY RF · 500 TO EACH INPUT OWNER</small></button>
-  <p class="msg" id="msg"></p>
-  <div id="receipt"></div>
-</section>
+  <div class="knob"><button id="sac" style="--c:var(--orange)" aria-label="Draw: sacrifice a tier-4 Gen 5 (simulated)"></button><span class="lbl">Draw</span></div>
+  <div class="knob"><button id="forgeBtn" style="--c:var(--blue)" aria-label="Forge A plus B for 1,000 play RF" disabled></button><span class="lbl">Forge</span></div>
+</div>
+<form class="typed" id="typed" autocomplete="off">
+  <input id="typeIn" placeholder="type any registered word" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" aria-label="Type a registered word">
+  <button type="submit">Load</button>
+</form>
+<p class="msg" id="msg">Draw sacrifices a tier-4 Gen 5 for a random word. Forge joins A and B into a new word for 1,000 RF, and pays 500 to each input’s owner.</p>
+<div id="receipt"></div>
 
-<section id="reg">
-  <h2><span class="n">03</span>Registry</h2>
-  <div class="tabs">
-    <button class="tab on" data-t="letters">Letters</button>
-    <button class="tab" data-t="mine">Yours</button>
-    <button class="tab" data-t="all">Everything</button>
-  </div>
-  <div class="own" id="ownNote"></div>
-  <div class="list" id="list"></div>
-  <details><summary>ACTIVITY</summary><div class="log" id="log"></div></details>
-</section>
+<div class="seg">
+  <button class="on" data-t="letters">Letters</button>
+  <button data-t="mine">Yours</button>
+  <button data-t="all">All words</button>
+</div>
+<p class="note" id="note"></p>
+<div class="keys" id="list"></div>
+<div class="legend"><span><i class="dot" style="--led:#ccff00"></i>you</span><span><i class="dot" style="--led:#f4f4f4;box-shadow:0 0 0 1px #999"></i>builder vault</span><span>any other colour: another player</span></div>
 
-<section>
-  <h2><span class="n">04</span>For the judges</h2>
+<details>
+  <summary>Odds and rules</summary>
+  <table>
+    <tr><td>Common word</td><td>~89%</td></tr>
+    <tr><td>Rare word</td><td>~10%</td></tr>
+    <tr><td>Epic word</td><td>~0.79%</td></tr>
+    <tr><td>Consonant 1/1</td><td>~0.2%</td></tr>
+    <tr><td>The letter s (1/1 chase)</td><td>~0.01%</td></tr>
+  </table>
+  <p>Letters draw without replacement, and word draws skip registered words. In this demo world every letter and “-” is already minted (vowels and “-” by the builder vault, consonants by other players), so a letter roll falls through to a common word. Every word is a 1/1. Forging is permissionless: any registered word can be an input, both inputs survive, and each input’s owner earns 500 of the 1,000 RF fee.</p>
+</details>
+<details><summary>Activity</summary><div class="log" id="log"></div></details>
+<details>
+  <summary>For the judges</summary>
   <ul class="checks">
     <li class="y">Every purchase and reward is simulated and labeled</li>
     <li class="y">Gacha odds match the README (89 / 10 / 0.79 / 0.2 / 0.01)</li>
     <li class="y">Every word is a 1/1: duplicates are refused</li>
     <li class="y">All 26 letters and “-” exist from the start, owned by others</li>
-    <li class="y">Forging is permissionless: any registered word is a valid input, and each input’s owner earns 500</li>
+    <li class="y">Forging is permissionless, and each input’s owner earns 500</li>
     <li class="n">Randomness is Math.random here; on-chain VRF or commit-reveal is future work</li>
     <li class="n">Demo dictionary is ~280 words; the full ~10,000-word list is future work</li>
   </ul>
-</section>
+</details>
 
 <footer>RareWords by Alan Carr · Rare Friends Vibeathon 2026 · <a href="https://github.com/AlanFalcon/rarewords-vibeathon">source</a></footer>
-
-<div class="dock" id="dock"><button class="btn" id="dockBtn">Sacrifice a Gen 5<small>SIMULATED · NO NFT IS LOCKED</small></button></div>
 
 <script>
 const COMMON=["cat","dog","sun","moon","star","tree","frog","bird","fish","cake","book","door","key","box","car","hat","shoe","rain","snow","wind","leaf","rock","sand","wave","fire","ice","cloud","storm","bolt","spark","drum","flute","bell","coin","gem","pearl","crown","sword","shield","arrow","bow","axe","hammer","nail","rope","chain","anchor","sail","oar","lantern","candle","mirror","clock","chair","table","cup","plate","bowl","spoon","fork","knife","bread","apple","pear","plum","berry","melon","grape","lemon","peach","cherry","honey","milk","sugar","salt","pepper","onion","carrot","potato","bean","corn","wheat","rice","oat","moss","fern","pine","oak","birch","maple","rose","tulip","daisy","lily","orchid","cactus","vine","kelp","coral","shell","crab","whale","shark","seal","otter","beaver","badger","weasel","mole","mouse","rat","bat","owl","hawk","eagle","crow","raven","dove","swan","goose","duck","hen","rooster","pig","cow","horse","sheep","goat","donkey","mule","llama","camel","zebra","giraffe","lion","tiger","bear","wolf","fox","deer","moose","elk","bison","cougar","lynx","panda","koala","wombat","dingo","hyena","jackal","cobra","viper","python","gecko","iguana","newt","toad","salamander","turtle","tortoise","comet","meteor","nebula","quasar","pulsar","galaxy","orbit","eclipse","aurora","zephyr","gale","monsoon","tsunami","avalanche","glacier","volcano","canyon","mesa","butte","oasis","delta","fjord","lagoon","reef","atoll","island","peninsula","harbor","dock","bridge","tunnel","tower","castle","fort","keep","moat","drawbridge","throne","scepter","orb","chalice","goblet","tankard","kettle","cauldron","potion","elixir","talisman","amulet","rune","scroll","tome","quill","ink","parchment","map","compass","sextant","spyglass","telescope","microscope","prism","lens"];
@@ -197,24 +151,63 @@ const RARE=["obsidian","moonstone","starfall","nightbloom","frostbrand","emberso
 const EPIC=["aetherdrake","voidsinger","starforged","moonwrought","sunshard","nightforge","doombringer","fateweaver","soulrender","dreamcatcher","mindflayer","timesplitter","realitybend","chaosborn","orderbound"];
 const CONS="bcdfghjklmnpqrstvwxyz".split("");
 const LETTERS=[..."abcdefghijklmnopqrstuvwxyz-"];
-const YOU="you";
+const YOU="you", VAULT="builder vault";
 const FAKE=["0x3f9a…c21","0x71be…04d","0xa0c4…9e7","0x5d12…b3a","0xe8f0…611","0x29ac…7f5","0xc6d3…2a8"];
-const owners=new Map(); // word -> owner (simulated)
-"aeiou-".split("").forEach(l=>owners.set(l,"builder vault"));
+const LED_PLAYERS=["#ff3b30","#3d7bff","#ffb300","#ff2e88","#00e0b0","#a071ff","#ff7a00"];
+const owners=new Map();
+"aeiou-".split("").forEach(l=>owners.set(l,VAULT));
 CONS.forEach((l,i)=>owners.set(l,"player "+FAKE[i%FAKE.length]));
 let bal=10000, sacs=0, consLeft=[], sDrawn=true, slots=[null,null], active=0, tab="letters";
 const $=id=>document.getElementById(id);
 const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const tiles=(w,cls="",lg=false)=>`<span class="tiles ${cls}">${[...w].map(ch=>`<span class="tile${lg?" lg":""}">${esc(ch)}</span>`).join("")}</span>`;
-const who=w=>owners.get(w)===YOU?"you":owners.get(w);
+const isMine=w=>owners.get(w)===YOU;
+const who=w=>isMine(w)?"you":owners.get(w);
+const led=w=>{const o=owners.get(w); if(o===YOU) return "#ccff00"; if(o===VAULT) return "#f4f4f4"; const i=FAKE.findIndex(f=>o&&o.endsWith(f)); return i<0?"#f4f4f4":LED_PLAYERS[i%LED_PLAYERS.length];};
 const mine=()=>[...owners].filter(([,o])=>o===YOU).map(([w])=>w);
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const fmt=n=>n.toLocaleString("en-US");
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function setBal(d){
-  bal+=d; $("bal").textContent=fmt(bal);
-  const el=$("delta"); el.textContent=d?(d>0?"+":"−")+fmt(Math.abs(d)):""; el.className="delta "+(d>0?"up":d<0?"down":"");
+/* ---------- The dot-matrix display: 128 x 32 dots, like a pinball DMD ---------- */
+const DW=128, DH=32, cv=$("dmd"), cx=cv.getContext("2d");
+const off=document.createElement("canvas"); off.width=2048; off.height=DH;
+const ox=off.getContext("2d",{willReadFrequently:true});
+let scene={small:[], big:[], t0:performance.now()};
+// A line is a list of [text, colour] runs. Rendered to a 1-bit bitmap per colour.
+function raster(runs, px, y){
+  // returns {w, cells:[{x,y,c}]}
+  ox.clearRect(0,0,off.width,off.height); ox.font=`${px}px Silkscreen`; ox.textBaseline="top";
+  let x=0; const spans=[];
+  for(const [t,c] of runs){ ox.fillStyle="#fff"; ox.fillText(t.toUpperCase(),x,0); const w=Math.ceil(ox.measureText(t.toUpperCase()).width); spans.push([x,x+w,c]); x+=w; }
+  const w=x, h=Math.ceil(px*1.1), img=ox.getImageData(0,0,Math.max(1,w),h).data, cells=[];
+  for(let yy=0; yy<h; yy++) for(let xx=0; xx<w; xx++){ if(img[(yy*w+xx)*4+3]>110){ const s=spans.find(s=>xx>=s[0]&&xx<s[1]); cells.push({x:xx,y:y+yy,c:s?s[2]:"#fff"}); } }
+  return {w,cells};
 }
+function show(small, big, opts={}){ scene={small:small?raster(small,8,1):null, big:big?raster(big,16,12):null, t0:performance.now(), blink:!!opts.blink, bigBlink:!!opts.bigBlink}; }
+function frame(now){
+  const W=cv.width, H=cv.height, p=W/DW, r=p*0.36;
+  cx.fillStyle="#0b0b0b"; cx.fillRect(0,0,W,H);
+  const lit=new Map();
+  const t=(now-scene.t0)/1000;
+  const place=(L,blink)=>{ if(!L) return; if(blink && Math.floor(t*2.2)%2) return;
+    let dx=Math.floor((DW-L.w)/2);
+    if(L.w>DW-4){ dx = reduce ? 2 : Math.round(DW - ((t*22) % (L.w+DW))); }
+    for(const c of L.cells){ const X=c.x+dx; if(X>=0&&X<DW&&c.y<DH) lit.set(X+","+c.y,c.c); } };
+  place(scene.small, scene.blink); place(scene.big, scene.bigBlink);
+  // unlit dots
+  cx.fillStyle="#1d1812";
+  for(let y=0;y<DH;y++) for(let x=0;x<DW;x++) if(!lit.has(x+","+y)){ cx.beginPath(); cx.arc((x+.5)*p,(y+.5)*p,r*.9,0,7); cx.fill(); }
+  // lit dots, with a soft halo
+  for(const [k,c] of lit){ const [x,y]=k.split(",").map(Number); cx.fillStyle=c; cx.globalAlpha=.22; cx.beginPath(); cx.arc((x+.5)*p,(y+.5)*p,r*2,0,7); cx.fill(); }
+  cx.globalAlpha=1;
+  for(const [k,c] of lit){ const [x,y]=k.split(",").map(Number); cx.fillStyle=c; cx.beginPath(); cx.arc((x+.5)*p,(y+.5)*p,r,0,7); cx.fill(); }
+  requestAnimationFrame(frame);
+}
+function idle(){ show([[fmt(bal)+" RF","#f4f4f4"]], [["R","#ff3b30"],["A","#ffb300"],["R","#3d7bff"],["E","#f4f4f4"],["W","#ff2e88"],["O","#f4f4f4"],["R","#00e0b0"],["D","#a071ff"],["S","#ccff00"]]); }
+const say=t=>{$("say").textContent=t;};
+
+/* ---------- Game ---------- */
+function setBal(d){ bal+=d; }
 function log(h){const d=document.createElement("div"); d.innerHTML=h; $("log").prepend(d);}
 
 function sacrifice(){
@@ -226,70 +219,73 @@ function sacrifice(){
   else if(r<9999 && consLeft.length){ out=consLeft.splice(Math.floor(Math.random()*consLeft.length),1)[0]; tier="1/1 letter"; }
   else if(!sDrawn){ out="s"; sDrawn=true; tier="1/1 letter"; }
   else { out=pick(free(COMMON)); }
-  if(!out){ $("reveal").innerHTML='<span class="empty">The demo word pool is used up. Forge instead!</span>'; return; }
+  if(!out){ show([["POOL EMPTY","#ff3b30"]],[["FORGE","#f4f4f4"]]); return; }
   sacs++; owners.set(out,YOU);
-  $("reveal").innerHTML=`<div>${tiles(out,"c pop",true)}<span class="rar ${tier.split(" ")[0]}">${tier} · draw #${sacs} · yours</span></div>`;
-  log(`Draw #${sacs} → ${esc(out)} (${tier})`);
+  const tc={common:"#f4f4f4",rare:"#3d7bff",epic:"#ff2e88"}[tier]||"#ffb300";
+  show([["DRAW "+sacs+" ","#f4f4f4"],[tier,tc]], [[out,"#ccff00"]]);
+  say(`Drew ${out}, ${tier}. It is yours.`);
+  $("msg").className="msg"; $("msg").textContent=`You drew “${out}” (${tier}). It’s yours now: you earn 500 RF whenever it’s used as an input.`;
+  log(`Draw ${sacs}: ${esc(out)} (${tier})`);
   renderList();
 }
 
-function setActive(i){ active=i; [0,1].forEach(k=>$("s"+k).classList.toggle("active",k===i)); }
+function setActive(i){ active=i; [0,1].forEach(k=>$("s"+k).classList.toggle("on",k===i)); }
 function fill(w){
   slots[active]=w;
   if(active===0 && !slots[1]) setActive(1); else if(active===1 && !slots[0]) setActive(0);
-  renderSlots();
+  renderSlots(true);
 }
-function renderSlots(){
-  [0,1].forEach(i=>{
-    const s=$("s"+i), w=slots[i];
-    s.classList.toggle("filled",!!w);
-    s.innerHTML=w?tiles(w,"c"):`<span class="ph">${i?"Second":"First"} word</span>`;
-  });
+function renderSlots(announce){
+  [0,1].forEach(i=>{ const v=$("s"+i).querySelector(".v"), w=slots[i]; v.textContent=w||"—"; v.style.color=w?led(w):"#555"; });
   const [a,b]=slots, ok=!!(a&&b), dup=ok&&owners.has(a+b);
   $("forgeBtn").disabled=!ok||dup;
-  $("preview").innerHTML=ok?tiles(a+b,"c"):"";
-  $("msg").className="msg"+(dup?" err":"");
-  $("msg").textContent=dup?`“${a+b}” already exists (owner: ${who(a+b)}). Every word is a 1/1.`:"";
-  document.querySelectorAll(".word").forEach(el=>el.classList.toggle("sel",slots.includes(el.dataset.w)));
+  if(dup){ $("msg").className="msg err"; $("msg").textContent=`“${a+b}” already exists, owned by ${who(a+b)}. Every word is a 1/1.`;
+    show([["ALREADY MINTED","#ff3b30"]],[[a+b,led(a+b)]],{blink:true}); }
+  else if(ok){ $("msg").className="msg"; $("msg").textContent=`Ready: ${a} + ${b} = ${a+b}. Press Forge (1,000 play RF).`;
+    if(announce) show([[a,led(a)],[" + ","#777"],[b,led(b)]],[[a+b,"#ccff00"]],{bigBlink:true}); }
+  else if(announce && (a||b)){ const w=a||b; show([["LOADED","#777"]],[[w,led(w)]]); }
+  document.querySelectorAll(".key").forEach(el=>el.classList.toggle("sel",slots.includes(el.dataset.w)));
 }
 
 function forge(){
   const [a,b]=slots; if(!a||!b) return;
   const out=a+b;
-  if(owners.has(out)){ renderSlots(); return; }
+  if(owners.has(out)){ renderSlots(true); return; }
   if(bal<1000){ $("msg").className="msg err"; $("msg").textContent="Not enough play RF."; return; }
-  let back=0; [a,b].forEach(w=>{ if(owners.get(w)===YOU) back+=500; });
-  owners.set(out,YOU);
-  setBal(-1000+back);
-  const line=w=>`<div><span class="who">→ ${esc(who(w))} for “${esc(w)}”</span><span>500</span></div>`;
-  $("receipt").innerHTML=`<div class="receipt"><div><b>Forged “${esc(out)}”</b><span>−1,000</span></div>${line(a)}${line(b)}${back?`<div><span class="who">Back to you as an input owner</span><span>+${fmt(back)}</span></div>`:""}<div><span class="who">All amounts are simulated play RF</span><span></span></div></div>`;
-  log(`Forged ${esc(a)} + ${esc(b)} → ${esc(out)} · 500 → ${esc(who(a))} / 500 → ${esc(who(b))}`);
-  slots=[null,null]; setActive(0); tab="mine"; syncTabs(); renderList();
+  let back=0; [a,b].forEach(w=>{ if(isMine(w)) back+=500; });
+  const oa=who(a), ob=who(b);
+  owners.set(out,YOU); setBal(-1000+back);
+  show([["FORGED  ","#f4f4f4"],[fmt(bal)+" RF","#ffb300"]],[[out,"#ccff00"]]);
+  say(`Forged ${out}. 500 to ${oa}, 500 to ${ob}.`);
+  const line=(w,o)=>`<div><span class="l">500 → ${esc(o)} (“${esc(w)}”)</span><span>500</span></div>`;
+  $("receipt").innerHTML=`<div class="tape"><div class="top"><span class="l">FORGED “${esc(out)}”</span><span>−1,000</span></div>${line(a,oa)}${line(b,ob)}${back?`<div><span class="l">back to you as an input owner</span><span>+${fmt(back)}</span></div>`:""}<div><span class="l">balance, play RF (simulated)</span><span>${fmt(bal)}</span></div></div>`;
+  $("msg").className="msg"; $("msg").textContent=`“${out}” is yours.`;
+  log(`Forged ${esc(a)} + ${esc(b)} = ${esc(out)}. 500 to ${esc(oa)}, 500 to ${esc(ob)}`);
+  slots=[null,null]; setActive(0); renderSlots(false); renderList();
 }
 
-function syncTabs(){ document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x.dataset.t===tab)); }
 function renderList(){
   let words, note;
-  if(tab==="mine"){ words=mine(); note=words.length?`You own ${words.length}. You earn 500 play RF each time one is used as an input.`:"Nothing yet. Draw a word, or forge one from the letters."; }
-  else if(tab==="letters"){ words=LETTERS; note="Minted before this session. Vowels and “-”: builder vault. Consonants: other players."; }
-  else { words=[...owners.keys()]; note=`${words.length} registered words in this world.`; }
-  $("ownNote").textContent=note;
-  $("list").innerHTML=words.map(w=>`<button class="word" data-w="${esc(w)}" title="owner: ${esc(who(w))}">${tiles(w)}</button>`).join("");
-  renderSlots();
+  if(tab==="mine"){ words=mine(); note=words.length?`You own ${words.length}.`:"Nothing yet. Press Draw, or forge a word from the letters."; }
+  else if(tab==="letters"){ words=LETTERS; note="Tap a key to load it into A or B. The light on each key is its owner."; }
+  else { words=[...owners.keys()]; note=`${words.length} words registered in this world.`; }
+  $("note").textContent=note;
+  $("list").className="keys"+(tab==="letters"?"":" words");
+  $("list").innerHTML=words.map(w=>`<button class="key" data-w="${esc(w)}" style="--led:${led(w)}" aria-label="${esc(w)}, owned by ${esc(who(w))}">${esc(w)}</button>`).join("");
+  document.querySelectorAll(".key").forEach(el=>el.classList.toggle("sel",slots.includes(el.dataset.w)));
 }
 
 $("sac").onclick=sacrifice;
-$("dockBtn").onclick=()=>{ sacrifice(); $("roll").scrollIntoView({behavior:"smooth"}); };
 $("forgeBtn").onclick=forge;
-[0,1].forEach(i=>$("s"+i).onclick=()=>{ if(slots[i]) slots[i]=null; setActive(i); renderSlots(); });
-$("list").onclick=e=>{ const b=e.target.closest(".word"); if(b) fill(b.dataset.w); };
-document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{ tab=t.dataset.t; syncTabs(); renderList(); });
+[0,1].forEach(i=>$("s"+i).onclick=()=>{ if(slots[i]) slots[i]=null; setActive(i); renderSlots(false); if(!slots[0]&&!slots[1]) idle(); });
+$("list").onclick=e=>{ const b=e.target.closest(".key"); if(b) fill(b.dataset.w); };
+document.querySelectorAll(".seg button").forEach(t=>t.onclick=()=>{ tab=t.dataset.t; document.querySelectorAll(".seg button").forEach(x=>x.classList.toggle("on",x===t)); renderList(); });
 $("typed").onsubmit=e=>{ e.preventDefault(); const w=$("typeIn").value.trim().toLowerCase(); if(!w) return;
-  if(!owners.has(w)){ $("msg").className="msg err"; $("msg").textContent=`“${w}” is not a registered word yet. Draw or forge it first.`; return; }
-  $("typeIn").value=""; fill(w); };
-// The dock appears only while the draw button is scrolled out of view
-if("IntersectionObserver" in window) new IntersectionObserver(([e])=>{ $("dock").style.display=e.isIntersecting?"none":"block"; }).observe($("sac"));
-renderList(); setBal(0);
+  if(!owners.has(w)){ $("msg").className="msg err"; $("msg").textContent=`“${w}” isn’t a registered word yet. Draw or forge it first.`; show([["NOT REGISTERED","#ff3b30"]],[[w,"#555"]]); return; }
+  $("typeIn").value=""; $("typeIn").blur(); fill(w); };
+
+renderList(); renderSlots(false);
+(document.fonts?document.fonts.load("16px Silkscreen"):Promise.resolve()).then(()=>{ idle(); requestAnimationFrame(frame); });
 </script>
 </body>
 </html>
