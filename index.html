@@ -2,130 +2,294 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RareWords — MVP Demo (SIMULATED)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#efe8dc">
+<title>RareWords — Simulated Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#0d0b16; --panel:#171426; --ink:#efe9ff; --dim:#a89fd0; --acc:#b48cff; --acc2:#ff7ad9; --good:#5be3a4; --warn:#ffcf6b; }
-  * { box-sizing:border-box; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-  body { background:var(--bg); color:var(--ink); margin:0; padding:24px; max-width:860px; margin-left:auto; margin-right:auto; }
-  h1 { font-size:26px; margin:0 0 4px; }
-  h1 .sim { color:var(--warn); font-size:14px; border:1px solid var(--warn); border-radius:6px; padding:2px 8px; vertical-align:middle; margin-left:8px;}
-  p.dim { color:var(--dim); font-size:13px; line-height:1.6; }
-  .banner { background:#241a08; border:1px solid var(--warn); border-radius:10px; padding:12px 14px; color:var(--warn); font-size:13px; margin:16px 0; }
-  .card { background:var(--panel); border:1px solid #2c2750; border-radius:12px; padding:18px; margin:16px 0; }
-  .card h2 { margin:0 0 10px; font-size:16px; color:var(--acc); }
-  button { background:linear-gradient(135deg,var(--acc),var(--acc2)); color:#0d0b16; font-weight:700; border:0; border-radius:8px; padding:10px 18px; cursor:pointer; font-size:14px; }
-  button:disabled { opacity:.4; cursor:default; }
-  input { background:#0d0b16; color:var(--ink); border:1px solid #2c2750; border-radius:8px; padding:10px; font-size:14px; width:180px; }
-  .result { margin-top:12px; font-size:15px; min-height:24px; }
-  .word { display:inline-block; background:#0d0b16; border:1px solid var(--acc); border-radius:8px; padding:6px 12px; margin:4px; font-size:15px; }
-  .word.letter { border-color:var(--acc2); color:var(--acc2); }
-  .word.owned { border-color:var(--good); }
-  .log { font-size:12px; color:var(--dim); max-height:160px; overflow:auto; margin-top:10px; }
-  .log div { padding:3px 0; border-bottom:1px dashed #2c2750; }
-  .stats { display:flex; gap:18px; font-size:13px; color:var(--dim); margin-top:10px; flex-wrap:wrap;}
-  .stats b { color:var(--ink); }
-  .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  :root{
+    --paper:#efe8dc; --card:#f8f4ec; --ink:#1d1a16; --dim:#6f665a; --rule:#d9cfbf;
+    --tile:#fbf6ea; --tile-edge:#cbbfa9; --red:#c8412a; --teal:#1d6b73; --gold:#a8791a;
+    --shadow:0 1px 0 var(--tile-edge), 0 2px 0 #b7aa92, 0 3px 6px rgba(60,40,10,.12);
+    --serif:"Fraunces", Georgia, serif; --sans:"IBM Plex Sans", system-ui, sans-serif; --mono:"IBM Plex Mono", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#16140f; --card:#1f1c16; --ink:#efe7d8; --dim:#a39883; --rule:#35302a;
+      --tile:#2a261f; --tile-edge:#453e33; --red:#ef6a4f; --teal:#5fb3b9; --gold:#e0b04e;
+      --shadow:0 1px 0 var(--tile-edge), 0 2px 0 #0c0b08, 0 3px 8px rgba(0,0,0,.4); }
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); overflow-x:hidden}
+  body{padding:0 16px calc(96px + env(safe-area-inset-bottom)); max-width:560px; margin:0 auto; font-size:16px; line-height:1.5; -webkit-text-size-adjust:100%}
+  button{font:inherit; color:inherit}
+
+  header{padding:28px 0 8px}
+  .mark{display:flex; gap:4px; margin-bottom:10px}
+  .brand{font-family:var(--serif); font-weight:900; font-size:40px; letter-spacing:-.02em; line-height:1; margin:0}
+  .brand em{font-style:normal; color:var(--red)}
+  .stamp{display:inline-block; margin-top:12px; font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--red); border:1.5px solid var(--red); border-radius:3px; padding:4px 8px; transform:rotate(-1.5deg)}
+  .lede{color:var(--dim); font-size:15px; margin:14px 0 0}
+
+  .bal{position:sticky; top:0; z-index:5; background:var(--paper); display:flex; justify-content:space-between; align-items:baseline;
+    padding:12px 0; border-bottom:1px solid var(--rule); margin:18px 0 0; font-family:var(--mono); font-size:13px; color:var(--dim)}
+  .bal b{font-size:18px; color:var(--ink); font-weight:600}
+  .bal .delta{margin-left:6px; font-size:12px}
+  .bal .up{color:var(--teal)} .bal .down{color:var(--red)}
+
+  section{padding:26px 0 8px; border-bottom:1px solid var(--rule)}
+  h2{font-family:var(--serif); font-weight:700; font-size:24px; margin:0 0 4px; letter-spacing:-.01em}
+  h2 .n{font-family:var(--mono); font-size:12px; color:var(--red); font-weight:600; vertical-align:middle; margin-right:8px; letter-spacing:.05em}
+  .sub{color:var(--dim); font-size:14px; margin:0 0 16px}
+
+  .tiles{display:flex; flex-wrap:wrap; gap:4px}
+  .tiles.c{justify-content:center}
+  .tile{display:inline-grid; place-items:center; min-width:30px; height:34px; padding:0 2px; background:var(--tile); border-radius:5px;
+    box-shadow:var(--shadow); font-family:var(--serif); font-weight:700; font-size:19px; text-transform:uppercase; line-height:1}
+  .tile.lg{min-width:40px; height:46px; font-size:26px; border-radius:7px}
+  .word{display:inline-flex; padding:6px; border-radius:8px; border:1px solid transparent; background:none; cursor:pointer}
+  .word .tiles{gap:2px}
+  .word .tile{min-width:24px; height:28px; font-size:15px; border-radius:4px}
+  .word:active{transform:translateY(1px)}
+  .word.sel{border-color:var(--red)}
+
+  .reveal{min-height:120px; display:grid; place-items:center; text-align:center; padding:18px 10px; margin-bottom:14px;
+    background:var(--card); border:1px solid var(--rule); border-radius:12px}
+  .reveal .empty{color:var(--dim); font-size:14px}
+  .rar{display:block; margin-top:12px; font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase}
+  .rar.common{color:var(--dim)} .rar.rare{color:var(--teal)} .rar.epic{color:var(--gold)}
+  .pop .tile{animation:drop .42s cubic-bezier(.2,.9,.3,1.3) both}
+  @keyframes drop{from{transform:translateY(-14px) rotate(-6deg); opacity:0} to{transform:none; opacity:1}}
+  @media (prefers-reduced-motion: reduce){ .pop .tile{animation:none} }
+
+  .btn{display:block; width:100%; border:0; border-radius:12px; padding:14px 16px; font-weight:600; font-size:17px; cursor:pointer;
+    background:var(--ink); color:var(--paper)}
+  .btn small{display:block; font-family:var(--mono); font-weight:400; font-size:11px; opacity:.7; margin-top:2px; letter-spacing:.04em}
+  .btn:disabled{opacity:.35}
+  .btn.red{background:var(--red); color:#fff}
+
+  details{margin-top:12px; font-size:14px; color:var(--dim)}
+  summary{cursor:pointer; font-family:var(--mono); font-size:12px; letter-spacing:.05em; padding:6px 0}
+  table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:13px}
+  td{padding:6px 0; border-bottom:1px dashed var(--rule)} td:last-child{text-align:right; color:var(--ink)}
+
+  .slots{display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:8px; align-items:center}
+  .slot{min-height:64px; border:1.5px dashed var(--tile-edge); border-radius:10px; display:grid; place-items:center; padding:8px;
+    background:none; cursor:pointer; width:100%; min-width:0}
+  .slot .tile{min-width:20px; height:26px; font-size:14px}
+  .slot.active{border-color:var(--red); border-style:solid}
+  .slot.filled{background:var(--card)}
+  .slot .ph{color:var(--dim); font-size:13px}
+  .plus{font-family:var(--serif); font-size:26px; color:var(--dim)}
+  .typed{display:flex; gap:8px; margin-top:10px}
+  .typed input{flex:1; min-width:0; font:16px var(--mono); padding:12px; border-radius:10px; border:1px solid var(--rule); background:var(--card); color:var(--ink)}
+  .typed button{border:1px solid var(--rule); background:var(--card); border-radius:10px; padding:0 14px; font-size:14px; cursor:pointer}
+  .preview{margin:14px 0; min-height:40px; display:flex; align-items:center; justify-content:center}
+  .msg{font-size:14px; margin:10px 0 0; min-height:21px}
+  .msg.err{color:var(--red)}
+  .receipt{font-family:var(--mono); font-size:12.5px; background:var(--card); border:1px solid var(--rule); border-radius:10px; padding:10px 12px; margin-top:10px}
+  .receipt div{display:flex; justify-content:space-between; gap:10px; padding:2px 0}
+  .receipt .who{color:var(--dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+  .tabs{display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap}
+  .tab{border:1px solid var(--rule); background:none; border-radius:999px; padding:6px 14px; font-size:14px; cursor:pointer}
+  .tab.on{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+  .list{display:flex; flex-wrap:wrap; gap:2px; margin:0 -6px}
+  .own{font-size:12px; color:var(--dim); font-family:var(--mono); padding:0 0 8px}
+  .log{font-family:var(--mono); font-size:12px; color:var(--dim); margin-top:8px}
+  .log div{padding:6px 0; border-bottom:1px dashed var(--rule)}
+  .checks{list-style:none; padding:0; margin:8px 0 0; font-size:14px}
+  .checks li{padding:6px 0 6px 26px; position:relative; border-bottom:1px dashed var(--rule)}
+  .checks li::before{position:absolute; left:0; font-family:var(--mono)}
+  .checks .y::before{content:"✓"; color:var(--teal)} .checks .n::before{content:"○"; color:var(--dim)}
+  footer{padding:24px 0; color:var(--dim); font-size:13px}
+  footer a{color:inherit}
+
+  .dock{position:fixed; left:0; right:0; bottom:0; z-index:10; padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top, var(--paper) 70%, transparent); display:none}
+  .dock .btn{max-width:528px; margin:0 auto; box-shadow:0 6px 20px rgba(0,0,0,.18)}
 </style>
 </head>
 <body>
-<h1>RareWords <span class="sim">SIMULATED MVP — no wallet, no real RF</span></h1>
-<p class="dim">Vibeathon preview of <b>RareWords</b> by Alan Carr. Every action below is <b>simulated</b> — no wallet connection, no real Robinhood Chain transactions, no real RF. Full design in the submission README. Builder vaults <b>a e i o u -</b> (never drawn).</p>
 
-<div class="banner">⚠️ SIMULATED DEMO — labels are honest by design: every number here is play money. Real-money mechanics (permanent lock, real RF fees) ship after audit.</div>
+<header>
+  <div class="mark tiles" aria-hidden="true"><span class="tile">R</span><span class="tile">W</span></div>
+  <h1 class="brand">Rare<em>Words</em></h1>
+  <span class="stamp">Simulated preview · play money · no wallet</span>
+  <p class="lede">Sacrifice a tier-4 Gen 5 Rare Friend to draw a word. Forge any two registered words into a new one. Every word is a 1/1, and its owner earns RF whenever someone builds on it.</p>
+</header>
 
-<div class="card">
-  <h2>1 · Sacrifice gacha</h2>
-  <p class="dim">Simulates locking a tier-4 Gen 5 forever and rolling the weighted gacha: ~89% common word · ~10% rare · ~0.79% epic · ~0.2% consonant 1/1 · ~0.01% the letter <b>s</b> (1/1 chase). Letters draw without replacement. <b>In this demo world all 26 letters and "-" are already minted</b> (vowels + "-" by the builder vault, consonants and <b>s</b> by other players), so a letter roll falls through to a common word.</p>
-  <button id="sac">🔥 Sacrifice tier-4 Gen 5 (simulated)</button>
-  <div class="result" id="sacResult"></div>
-  <div class="stats"><span>Sacrifices: <b id="stSac">0</b></span><span>Words you own: <b id="stWords">0</b></span><span>Consonant 1/1s left: <b id="stCons">0</b></span><span>'s' drawn: <b id="stS">no</b></span></div>
+<div class="bal" aria-live="polite">
+  <span>Play RF <span class="delta" id="delta"></span></span>
+  <b id="bal">10,000</b>
 </div>
 
-<div class="card">
-  <h2>2 · Forge (add)</h2>
-  <p class="dim"><code>add(word1, word2)</code> — permissionless, both inputs survive. Simulated forge fee: <b>1,000 RF → 500/500</b> to the current owners of the two direct inputs. Inputs can be <b>any</b> registered word, whoever owns it (try <code>cat</code> + <code>s</code>, or <code>sun</code> + <code>-</code>). Per the design, hyphenated compounds (not the bare "-") earn <b>no</b> royalty when used as forge inputs.</p>
-  <div class="row">
-    <input id="w1" placeholder="first word">
-    <span style="color:var(--dim)">+</span>
-    <input id="w2" placeholder="second word">
-    <button id="forgeBtn">⚒️ Forge (simulated)</button>
+<section id="roll">
+  <h2><span class="n">01</span>Draw</h2>
+  <p class="sub">Lock a tier-4 Gen 5 forever (simulated) and draw from the weighted pool.</p>
+  <div class="reveal" id="reveal"><span class="empty">Your first draw lands here.</span></div>
+  <button class="btn" id="sac">Sacrifice a Gen 5<small>SIMULATED · NO NFT IS LOCKED</small></button>
+  <details>
+    <summary>ODDS &amp; RULES</summary>
+    <table>
+      <tr><td>Common word</td><td>~89%</td></tr>
+      <tr><td>Rare word</td><td>~10%</td></tr>
+      <tr><td>Epic word</td><td>~0.79%</td></tr>
+      <tr><td>Consonant 1/1</td><td>~0.2%</td></tr>
+      <tr><td>The letter s (1/1 chase)</td><td>~0.01%</td></tr>
+    </table>
+    <p>Letters draw without replacement and word draws skip registered words. In this demo world every letter and “-” is already minted (vowels and “-” by the builder vault, consonants by other players), so a letter roll falls through to a common word.</p>
+  </details>
+</section>
+
+<section id="forge">
+  <h2><span class="n">02</span>Forge</h2>
+  <p class="sub">Tap a slot, then tap any word or letter in the registry below. Inputs can be anyone’s, and both survive.</p>
+  <div class="slots">
+    <button class="slot active" id="s0"><span class="ph">First word</span></button>
+    <span class="plus">+</span>
+    <button class="slot" id="s1"><span class="ph">Second word</span></button>
   </div>
-  <div class="result" id="forgeResult"></div>
-  <div class="log" id="forgeLog"></div>
-</div>
+  <form class="typed" id="typed" autocomplete="off">
+    <input id="typeIn" placeholder="or type a word" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done">
+    <button type="submit">Add</button>
+  </form>
+  <div class="preview" id="preview"></div>
+  <button class="btn red" id="forgeBtn" disabled>Forge<small>1,000 PLAY RF · 500 TO EACH INPUT OWNER</small></button>
+  <p class="msg" id="msg"></p>
+  <div id="receipt"></div>
+</section>
 
-<div class="card">
-  <h2>Your registry</h2>
-  <p class="dim">Words you own in this session (drawn or forged). You earn the royalty whenever someone forges with them.</p>
-  <div id="registry"><span class="dim">Nothing yet — sacrifice first.</span></div>
-  <h2 style="margin-top:16px">World registry · letters</h2>
-  <p class="dim">Pre-minted before this session (simulated owners). Usable by anyone as forge inputs; their owners collect the royalty.</p>
-  <div id="world"></div>
-</div>
-
-<div class="card">
-  <h2>Checks for the judges</h2>
-  <div class="log">
-    <div>✔ All purchases and rewards simulated and labeled as such</div>
-    <div>✔ Gacha odds match the README strawman (89 / 10 / 0.79 / 0.2 / 0.01)</div>
-    <div>✔ Letters drawn without replacement · word draws skip registered words</div>
-    <div>✔ Vowels + hyphen vaulted by builder — never drawn</div>
-    <div>✔ All 26 letters and "-" exist from the start, owned by others (simulated world state)</div>
-    <div>✔ Forging is permissionless: any registered word is a valid input, not just your own</div>
-    <div>✘ Randomness is Math.random here; on-chain VRF (or commit-reveal) is future work</div>
-    <div>✘ Demo dictionary is 210 curated words; full ~10,000-word list is future work</div>
+<section id="reg">
+  <h2><span class="n">03</span>Registry</h2>
+  <div class="tabs">
+    <button class="tab on" data-t="letters">Letters</button>
+    <button class="tab" data-t="mine">Yours</button>
+    <button class="tab" data-t="all">Everything</button>
   </div>
-</div>
+  <div class="own" id="ownNote"></div>
+  <div class="list" id="list"></div>
+  <details><summary>ACTIVITY</summary><div class="log" id="log"></div></details>
+</section>
+
+<section>
+  <h2><span class="n">04</span>For the judges</h2>
+  <ul class="checks">
+    <li class="y">Every purchase and reward is simulated and labeled</li>
+    <li class="y">Gacha odds match the README (89 / 10 / 0.79 / 0.2 / 0.01)</li>
+    <li class="y">Every word is a 1/1: duplicates are refused</li>
+    <li class="y">All 26 letters and “-” exist from the start, owned by others</li>
+    <li class="y">Forging is permissionless: any registered word is a valid input, and each input’s owner earns 500</li>
+    <li class="n">Randomness is Math.random here; on-chain VRF or commit-reveal is future work</li>
+    <li class="n">Demo dictionary is ~280 words; the full ~10,000-word list is future work</li>
+  </ul>
+</section>
+
+<footer>RareWords by Alan Carr · Rare Friends Vibeathon 2026 · <a href="https://github.com/AlanFalcon/rarewords-vibeathon">source</a></footer>
+
+<div class="dock" id="dock"><button class="btn" id="dockBtn">Sacrifice a Gen 5<small>SIMULATED · NO NFT IS LOCKED</small></button></div>
 
 <script>
-const COMMON=["cat","dog","sun","moon","star","tree","frog","bird","fish","cake","book","door","key","box","car","hat","shoe","rain","snow","wind","leaf","rock","sand","wave","fire","ice","cloud","storm","bolt","spark","drum","flute","bell","coin","gem","pearl","crown","sword","shield","arrow","bow","axe","hammer","nail","rope","chain","anchor","sail","oar","lantern","candle","mirror","clock","chair","table","cup","plate","bowl","spoon","fork","knife","bread","apple","pear","plum","berry","melon","grape","lemon","peach","cherry","honey","milk","sugar","salt","pepper","onion","carrot","potato","bean","corn","wheat","rice","oat","moss","fern","pine","oak","birch","maple","rose","tulip","daisy","lily","orchid","cactus","vine","kelp","coral","shell","crab","whale","shark","seal","otter","beaver","badger","weasel","mole","mouse","rat","bat","owl","hawk","eagle","crow","raven","dove","swan","goose","duck","hen","rooster","pig","cow","horse","sheep","goat","donkey","mule","llama","camel","zebra","giraffe","lion","tiger","bear","wolf","fox","deer","moose","elk","bison","cougar","lynx","otter","panda","koala","wombat","dingo","hyena","jackal","cobra","viper","python","gecko","iguana","newt","toad","salamander","turtle","tortoise","comet","meteor","nebula","quasar","pulsar","galaxy","orbit","eclipse","aurora","zephyr","gale","monsoon","tsunami","avalanche","glacier","volcano","canyon","mesa","butte","oasis","delta","fjord","lagoon","reef","atoll","island","peninsula","harbor","dock","bridge","tunnel","tower","castle","fort","keep","moat","drawbridge","throne","scepter","orb","chalice","goblet","tankard","kettle","cauldron","potion","elixir","talisman","amulet","rune","scroll","tome","quill","ink","parchment","map","compass","sextant","spyglass","telescope","microscope","prism","lens"];
+const COMMON=["cat","dog","sun","moon","star","tree","frog","bird","fish","cake","book","door","key","box","car","hat","shoe","rain","snow","wind","leaf","rock","sand","wave","fire","ice","cloud","storm","bolt","spark","drum","flute","bell","coin","gem","pearl","crown","sword","shield","arrow","bow","axe","hammer","nail","rope","chain","anchor","sail","oar","lantern","candle","mirror","clock","chair","table","cup","plate","bowl","spoon","fork","knife","bread","apple","pear","plum","berry","melon","grape","lemon","peach","cherry","honey","milk","sugar","salt","pepper","onion","carrot","potato","bean","corn","wheat","rice","oat","moss","fern","pine","oak","birch","maple","rose","tulip","daisy","lily","orchid","cactus","vine","kelp","coral","shell","crab","whale","shark","seal","otter","beaver","badger","weasel","mole","mouse","rat","bat","owl","hawk","eagle","crow","raven","dove","swan","goose","duck","hen","rooster","pig","cow","horse","sheep","goat","donkey","mule","llama","camel","zebra","giraffe","lion","tiger","bear","wolf","fox","deer","moose","elk","bison","cougar","lynx","panda","koala","wombat","dingo","hyena","jackal","cobra","viper","python","gecko","iguana","newt","toad","salamander","turtle","tortoise","comet","meteor","nebula","quasar","pulsar","galaxy","orbit","eclipse","aurora","zephyr","gale","monsoon","tsunami","avalanche","glacier","volcano","canyon","mesa","butte","oasis","delta","fjord","lagoon","reef","atoll","island","peninsula","harbor","dock","bridge","tunnel","tower","castle","fort","keep","moat","drawbridge","throne","scepter","orb","chalice","goblet","tankard","kettle","cauldron","potion","elixir","talisman","amulet","rune","scroll","tome","quill","ink","parchment","map","compass","sextant","spyglass","telescope","microscope","prism","lens"];
 const RARE=["obsidian","moonstone","starfall","nightbloom","frostbrand","embersong","thunderhead","silverleaf","goldcrest","ironbark","stormcrow","ravenswing","wolfsbane","dragonscale","phoenixash","tidecaller","windwhisper","sunforge","moonglade","starweaver","frostbite","emberheart","stormbringer","nightshade","daybreak","duskfall","dawnchorus","twilight","midnight","eclipseborn","cometfall","nebulaheart","quasarlight","pulsarwave","galaxyspun","orbitdancer","auroraveil","zephyrwing","galewarden","monsoonborn","tsunamireach","avalanchefell","glacierdeep","volcanocore","canyonrunner","mesawalker","oasisbloom","deltarun","fjordmist"];
 const EPIC=["aetherdrake","voidsinger","starforged","moonwrought","sunshard","nightforge","doombringer","fateweaver","soulrender","dreamcatcher","mindflayer","timesplitter","realitybend","chaosborn","orderbound"];
 const CONS="bcdfghjklmnpqrstvwxyz".split("");
+const LETTERS=[..."abcdefghijklmnopqrstuvwxyz-"];
 const YOU="you";
+const FAKE=["0x3f9a…c21","0x71be…04d","0xa0c4…9e7","0x5d12…b3a","0xe8f0…611","0x29ac…7f5","0xc6d3…2a8"];
 const owners=new Map(); // word -> owner (simulated)
 "aeiou-".split("").forEach(l=>owners.set(l,"builder vault"));
-const FAKE=["0x3f9a…c21","0x71be…04d","0xa0c4…9e7","0x5d12…b3a","0xe8f0…611","0x29ac…7f5","0xc6d3…2a8"];
-[...CONS].forEach((l,i)=>owners.set(l,"player "+FAKE[i%FAKE.length]));
-const mine=()=>[...owners].filter(([,o])=>o===YOU).map(([w])=>w);
-let sacs=0, consLeft=[], sDrawn=true; // every letter is already minted in this demo world
+CONS.forEach((l,i)=>owners.set(l,"player "+FAKE[i%FAKE.length]));
+let bal=10000, sacs=0, consLeft=[], sDrawn=true, slots=[null,null], active=0, tab="letters";
 const $=id=>document.getElementById(id);
-function pick(a){return a[Math.floor(Math.random()*a.length)];}
-function renderRegistry(){
-  const el=$("registry"), m=mine();
-  el.innerHTML=m.length?m.map(w=>`<span class="word owned">${w}</span>`).join(""):'<span class="dim">Nothing yet — sacrifice or forge.</span>';
-  $("world").innerHTML=[..."abcdefghijklmnopqrstuvwxyz-"].map(l=>`<span class="word letter" title="owner: ${owners.get(l)}">${l}</span>`).join("")
-    +'<div class="dim" style="font-size:12px;margin-top:6px">vowels + "-": builder vault · consonants: other players (hover for owner)</div>';
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const tiles=(w,cls="",lg=false)=>`<span class="tiles ${cls}">${[...w].map(ch=>`<span class="tile${lg?" lg":""}">${esc(ch)}</span>`).join("")}</span>`;
+const who=w=>owners.get(w)===YOU?"you":owners.get(w);
+const mine=()=>[...owners].filter(([,o])=>o===YOU).map(([w])=>w);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const fmt=n=>n.toLocaleString("en-US");
+
+function setBal(d){
+  bal+=d; $("bal").textContent=fmt(bal);
+  const el=$("delta"); el.textContent=d?(d>0?"+":"−")+fmt(Math.abs(d)):""; el.className="delta "+(d>0?"up":d<0?"down":"");
 }
-function log(msg){const d=document.createElement("div");d.innerHTML=msg;$("forgeLog").prepend(d);}
-$("sac").onclick=()=>{
-  sacs++; $("stSac").textContent=sacs;
-  const r=Math.random()*10000; let out,cls="";
-  if(r<8900){ out=pick(COMMON.filter(w=>!owners.has(w))); }
-  else if(r<9900){ const pool=RARE.filter(w=>!owners.has(w)); out=pool.length?pick(pool):pick(COMMON); }
-  else if(r<9979){ const pool=EPIC.filter(w=>!owners.has(w)); out=pool.length?pick(pool):pick(RARE); }
-  else if(r<9999 && consLeft.length){ out=consLeft.splice(Math.floor(Math.random()*consLeft.length),1)[0]; cls="letter"; }
-  else if(!sDrawn){ out="s"; sDrawn=true; cls="letter"; }
-  else { out=pick(COMMON.filter(w=>!owners.has(w))); }
-  owners.set(out,YOU); renderRegistry();
-  $("sacResult").innerHTML=`🎲 Sacrifice #${sacs} → <span class="word ${cls}">${out}</span> <span class="dim">registered to you (simulated)</span>`;
-  $("stWords").textContent=mine().length; $("stCons").textContent=consLeft.length; $("stS").textContent=sDrawn?"yes":"no";
-};
-$("forgeBtn").onclick=()=>{
-  const a=$("w1").value.trim().toLowerCase(), b=$("w2").value.trim().toLowerCase();
-  if(!a||!b){$("forgeResult").textContent="Enter two registered words.";return;}
-  if(!owners.has(a)||!owners.has(b)){$("forgeResult").textContent=`"${!owners.has(a)?a:b}" is not a registered word yet — sacrifice or forge it first.`;return;}
+function log(h){const d=document.createElement("div"); d.innerHTML=h; $("log").prepend(d);}
+
+function sacrifice(){
+  const free=a=>a.filter(w=>!owners.has(w));
+  const r=Math.random()*10000; let out, tier="common";
+  if(r<8900){ out=pick(free(COMMON)); }
+  else if(r<9900){ const p=free(RARE); if(p.length){out=pick(p); tier="rare";} else out=pick(free(COMMON)); }
+  else if(r<9979){ const p=free(EPIC); if(p.length){out=pick(p); tier="epic";} else out=pick(free(COMMON)); }
+  else if(r<9999 && consLeft.length){ out=consLeft.splice(Math.floor(Math.random()*consLeft.length),1)[0]; tier="1/1 letter"; }
+  else if(!sDrawn){ out="s"; sDrawn=true; tier="1/1 letter"; }
+  else { out=pick(free(COMMON)); }
+  if(!out){ $("reveal").innerHTML='<span class="empty">The demo word pool is used up. Forge instead!</span>'; return; }
+  sacs++; owners.set(out,YOU);
+  $("reveal").innerHTML=`<div>${tiles(out,"c pop",true)}<span class="rar ${tier.split(" ")[0]}">${tier} · draw #${sacs} · yours</span></div>`;
+  log(`Draw #${sacs} → ${esc(out)} (${tier})`);
+  renderList();
+}
+
+function setActive(i){ active=i; [0,1].forEach(k=>$("s"+k).classList.toggle("active",k===i)); }
+function fill(w){
+  slots[active]=w;
+  if(active===0 && !slots[1]) setActive(1); else if(active===1 && !slots[0]) setActive(0);
+  renderSlots();
+}
+function renderSlots(){
+  [0,1].forEach(i=>{
+    const s=$("s"+i), w=slots[i];
+    s.classList.toggle("filled",!!w);
+    s.innerHTML=w?tiles(w,"c"):`<span class="ph">${i?"Second":"First"} word</span>`;
+  });
+  const [a,b]=slots, ok=!!(a&&b), dup=ok&&owners.has(a+b);
+  $("forgeBtn").disabled=!ok||dup;
+  $("preview").innerHTML=ok?tiles(a+b,"c"):"";
+  $("msg").className="msg"+(dup?" err":"");
+  $("msg").textContent=dup?`“${a+b}” already exists (owner: ${who(a+b)}). Every word is a 1/1.`:"";
+  document.querySelectorAll(".word").forEach(el=>el.classList.toggle("sel",slots.includes(el.dataset.w)));
+}
+
+function forge(){
+  const [a,b]=slots; if(!a||!b) return;
   const out=a+b;
-  if(owners.has(out)){$("forgeResult").textContent=`"${out}" already exists (owner: ${owners.get(out)}). Every word is a 1/1.`;return;}
-  owners.set(out,YOU); renderRegistry(); $("stWords").textContent=mine().length;
-  const who=w=>owners.get(w)===YOU?"you":owners.get(w);
-  const compound=w=>w.length>1&&w.includes("-");
-  const hyphenNote=(compound(a)||compound(b))?" (hyphenated compound input earns no royalty — by design)":"";
-  $("forgeResult").innerHTML=`⚒️ add("${a}","${b}") → <span class="word owned">${out}</span> minted to you (simulated).<br><span class="dim">Fee 1,000 RF (simulated) → 500 to "${a}" (${who(a)}), 500 to "${b}" (${who(b)})${hyphenNote}.</span>`;
-  log(`⚒️ "${a}" + "${b}" → "${out}" · 500 → ${who(a)} / 500 → ${who(b)} (simulated)${hyphenNote}`);
-};
-renderRegistry();
+  if(owners.has(out)){ renderSlots(); return; }
+  if(bal<1000){ $("msg").className="msg err"; $("msg").textContent="Not enough play RF."; return; }
+  let back=0; [a,b].forEach(w=>{ if(owners.get(w)===YOU) back+=500; });
+  owners.set(out,YOU);
+  setBal(-1000+back);
+  const line=w=>`<div><span class="who">→ ${esc(who(w))} for “${esc(w)}”</span><span>500</span></div>`;
+  $("receipt").innerHTML=`<div class="receipt"><div><b>Forged “${esc(out)}”</b><span>−1,000</span></div>${line(a)}${line(b)}${back?`<div><span class="who">Back to you as an input owner</span><span>+${fmt(back)}</span></div>`:""}<div><span class="who">All amounts are simulated play RF</span><span></span></div></div>`;
+  log(`Forged ${esc(a)} + ${esc(b)} → ${esc(out)} · 500 → ${esc(who(a))} / 500 → ${esc(who(b))}`);
+  slots=[null,null]; setActive(0); tab="mine"; syncTabs(); renderList();
+}
+
+function syncTabs(){ document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x.dataset.t===tab)); }
+function renderList(){
+  let words, note;
+  if(tab==="mine"){ words=mine(); note=words.length?`You own ${words.length}. You earn 500 play RF each time one is used as an input.`:"Nothing yet. Draw a word, or forge one from the letters."; }
+  else if(tab==="letters"){ words=LETTERS; note="Minted before this session. Vowels and “-”: builder vault. Consonants: other players."; }
+  else { words=[...owners.keys()]; note=`${words.length} registered words in this world.`; }
+  $("ownNote").textContent=note;
+  $("list").innerHTML=words.map(w=>`<button class="word" data-w="${esc(w)}" title="owner: ${esc(who(w))}">${tiles(w)}</button>`).join("");
+  renderSlots();
+}
+
+$("sac").onclick=sacrifice;
+$("dockBtn").onclick=()=>{ sacrifice(); $("roll").scrollIntoView({behavior:"smooth"}); };
+$("forgeBtn").onclick=forge;
+[0,1].forEach(i=>$("s"+i).onclick=()=>{ if(slots[i]) slots[i]=null; setActive(i); renderSlots(); });
+$("list").onclick=e=>{ const b=e.target.closest(".word"); if(b) fill(b.dataset.w); };
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{ tab=t.dataset.t; syncTabs(); renderList(); });
+$("typed").onsubmit=e=>{ e.preventDefault(); const w=$("typeIn").value.trim().toLowerCase(); if(!w) return;
+  if(!owners.has(w)){ $("msg").className="msg err"; $("msg").textContent=`“${w}” is not a registered word yet. Draw or forge it first.`; return; }
+  $("typeIn").value=""; fill(w); };
+// The dock appears only while the draw button is scrolled out of view
+if("IntersectionObserver" in window) new IntersectionObserver(([e])=>{ $("dock").style.display=e.isIntersecting?"none":"block"; }).observe($("sac"));
+renderList(); setBal(0);
 </script>
 </body>
 </html>
