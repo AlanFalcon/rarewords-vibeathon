@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RareWords — MVP Demo (SIMULATED)</title>
+<style>
+  :root { --bg:#0d0b16; --panel:#171426; --ink:#efe9ff; --dim:#a89fd0; --acc:#b48cff; --acc2:#ff7ad9; --good:#5be3a4; --warn:#ffcf6b; }
+  * { box-sizing:border-box; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  body { background:var(--bg); color:var(--ink); margin:0; padding:24px; max-width:860px; margin-left:auto; margin-right:auto; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h1 .sim { color:var(--warn); font-size:14px; border:1px solid var(--warn); border-radius:6px; padding:2px 8px; vertical-align:middle; margin-left:8px;}
+  p.dim { color:var(--dim); font-size:13px; line-height:1.6; }
+  .banner { background:#241a08; border:1px solid var(--warn); border-radius:10px; padding:12px 14px; color:var(--warn); font-size:13px; margin:16px 0; }
+  .card { background:var(--panel); border:1px solid #2c2750; border-radius:12px; padding:18px; margin:16px 0; }
+  .card h2 { margin:0 0 10px; font-size:16px; color:var(--acc); }
+  button { background:linear-gradient(135deg,var(--acc),var(--acc2)); color:#0d0b16; font-weight:700; border:0; border-radius:8px; padding:10px 18px; cursor:pointer; font-size:14px; }
+  button:disabled { opacity:.4; cursor:default; }
+  input { background:#0d0b16; color:var(--ink); border:1px solid #2c2750; border-radius:8px; padding:10px; font-size:14px; width:180px; }
+  .result { margin-top:12px; font-size:15px; min-height:24px; }
+  .word { display:inline-block; background:#0d0b16; border:1px solid var(--acc); border-radius:8px; padding:6px 12px; margin:4px; font-size:15px; }
+  .word.letter { border-color:var(--acc2); color:var(--acc2); }
+  .word.owned { border-color:var(--good); }
+  .log { font-size:12px; color:var(--dim); max-height:160px; overflow:auto; margin-top:10px; }
+  .log div { padding:3px 0; border-bottom:1px dashed #2c2750; }
+  .stats { display:flex; gap:18px; font-size:13px; color:var(--dim); margin-top:10px; flex-wrap:wrap;}
+  .stats b { color:var(--ink); }
+  .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+</style>
+</head>
+<body>
+<h1>RareWords <span class="sim">SIMULATED MVP — no wallet, no real RF</span></h1>
+<p class="dim">Vibeathon preview of <b>RareWords</b> by Alan Carr. Every action below is <b>simulated</b> — no wallet connection, no real Robinhood Chain transactions, no real RF. Full design in the submission README. Builder vaults <b>a e i o u -</b> (never drawn).</p>
+
+<div class="banner">⚠️ SIMULATED DEMO — labels are honest by design: every number here is play money. Real-money mechanics (permanent lock, real RF fees) ship after audit.</div>
+
+<div class="card">
+  <h2>1 · Sacrifice gacha</h2>
+  <p class="dim">Simulates locking a tier-4 Gen 5 forever and rolling the weighted gacha: ~89% common word · ~10% rare · ~0.79% epic · ~0.2% consonant 1/1 · ~0.01% the letter <b>s</b> (1/1 chase). Letters draw without replacement.</p>
+  <button id="sac">🔥 Sacrifice tier-4 Gen 5 (simulated)</button>
+  <div class="result" id="sacResult"></div>
+  <div class="stats"><span>Sacrifices: <b id="stSac">0</b></span><span>Words drawn: <b id="stWords">0</b></span><span>Consonant 1/1s left: <b id="stCons">21</b></span><span>'s' drawn: <b id="stS">no</b></span></div>
+</div>
+
+<div class="card">
+  <h2>2 · Forge (add)</h2>
+  <p class="dim"><code>add(word1, word2)</code> — permissionless, both inputs survive. Simulated forge fee: <b>1,000 RF → 500/500</b> to the current owners of the two direct inputs. Per the design, hyphenated compounds earn <b>no</b> royalty when used as forge inputs.</p>
+  <div class="row">
+    <input id="w1" placeholder="first word">
+    <span style="color:var(--dim)">+</span>
+    <input id="w2" placeholder="second word">
+    <button id="forgeBtn">⚒️ Forge (simulated)</button>
+  </div>
+  <div class="result" id="forgeResult"></div>
+  <div class="log" id="forgeLog"></div>
+</div>
+
+<div class="card">
+  <h2>Your registry</h2>
+  <p class="dim">Words you own in this session (drawn or forged). Forge inputs must be registered words.</p>
+  <div id="registry"><span class="dim">Nothing yet — sacrifice first.</span></div>
+</div>
+
+<div class="card">
+  <h2>Checks for the judges</h2>
+  <div class="log">
+    <div>✔ All purchases and rewards simulated and labeled as such</div>
+    <div>✔ Gacha odds match the README strawman (89 / 10 / 0.79 / 0.2 / 0.01)</div>
+    <div>✔ Letters drawn without replacement · word draws skip registered words</div>
+    <div>✔ Vowels + hyphen vaulted by builder — never drawn</div>
+    <div>✘ Randomness is Math.random here; on-chain VRF (or commit-reveal) is future work</div>
+    <div>✘ Demo dictionary is 210 curated words; full ~10,000-word list is future work</div>
+  </div>
+</div>
+
+<script>
+const COMMON=["cat","dog","sun","moon","star","tree","frog","bird","fish","cake","book","door","key","box","car","hat","shoe","rain","snow","wind","leaf","rock","sand","wave","fire","ice","cloud","storm","bolt","spark","drum","flute","bell","coin","gem","pearl","crown","sword","shield","arrow","bow","axe","hammer","nail","rope","chain","anchor","sail","oar","lantern","candle","mirror","clock","chair","table","cup","plate","bowl","spoon","fork","knife","bread","apple","pear","plum","berry","melon","grape","lemon","peach","cherry","honey","milk","sugar","salt","pepper","onion","carrot","potato","bean","corn","wheat","rice","oat","moss","fern","pine","oak","birch","maple","rose","tulip","daisy","lily","orchid","cactus","vine","kelp","coral","shell","crab","whale","shark","seal","otter","beaver","badger","weasel","mole","mouse","rat","bat","owl","hawk","eagle","crow","raven","dove","swan","goose","duck","hen","rooster","pig","cow","horse","sheep","goat","donkey","mule","llama","camel","zebra","giraffe","lion","tiger","bear","wolf","fox","deer","moose","elk","bison","cougar","lynx","otter","panda","koala","wombat","dingo","hyena","jackal","cobra","viper","python","gecko","iguana","newt","toad","salamander","turtle","tortoise","comet","meteor","nebula","quasar","pulsar","galaxy","orbit","eclipse","aurora","zephyr","gale","monsoon","tsunami","avalanche","glacier","volcano","canyon","mesa","butte","oasis","delta","fjord","lagoon","reef","atoll","island","peninsula","harbor","dock","bridge","tunnel","tower","castle","fort","keep","moat","drawbridge","throne","scepter","orb","chalice","goblet","tankard","kettle","cauldron","potion","elixir","talisman","amulet","rune","scroll","tome","quill","ink","parchment","map","compass","sextant","spyglass","telescope","microscope","prism","lens"];
+const RARE=["obsidian","moonstone","starfall","nightbloom","frostbrand","embersong","thunderhead","silverleaf","goldcrest","ironbark","stormcrow","ravenswing","wolfsbane","dragonscale","phoenixash","tidecaller","windwhisper","sunforge","moonglade","starweaver","frostbite","emberheart","stormbringer","nightshade","daybreak","duskfall","dawnchorus","twilight","midnight","eclipseborn","cometfall","nebulaheart","quasarlight","pulsarwave","galaxyspun","orbitdancer","auroraveil","zephyrwing","galewarden","monsoonborn","tsunamireach","avalanchefell","glacierdeep","volcanocore","canyonrunner","mesawalker","oasisbloom","deltarun","fjordmist"];
+const EPIC=["aetherdrake","voidsinger","starforged","moonwrought","sunshard","nightforge","doombringer","fateweaver","soulrender","dreamcatcher","mindflayer","timesplitter","realitybend","chaosborn","orderbound"];
+const CONS="bcdfghjklmnpqrstvwxyz".split("");
+const registry=new Set(); let sacs=0, consLeft=[...CONS], sDrawn=false;
+const $=id=>document.getElementById(id);
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function renderRegistry(){
+  const el=$("registry");
+  if(!registry.size){el.innerHTML='<span class="dim">Nothing yet — sacrifice first.</span>';return;}
+  el.innerHTML=[...registry].map(w=>`<span class="word ${w.length===1?"letter":""}">${w}</span>`).join("");
+}
+function log(msg){const d=document.createElement("div");d.innerHTML=msg;$("forgeLog").prepend(d);}
+$("sac").onclick=()=>{
+  sacs++; $("stSac").textContent=sacs;
+  const r=Math.random()*10000; let out,cls="";
+  if(r<8900){ out=pick(COMMON.filter(w=>!registry.has(w))); }
+  else if(r<9900){ const pool=RARE.filter(w=>!registry.has(w)); out=pool.length?pick(pool):pick(COMMON); }
+  else if(r<9979){ const pool=EPIC.filter(w=>!registry.has(w)); out=pool.length?pick(pool):pick(RARE); }
+  else if(r<9999 && consLeft.length){ out=consLeft.splice(Math.floor(Math.random()*consLeft.length),1)[0]; cls="letter"; }
+  else if(!sDrawn){ out="s"; sDrawn=true; cls="letter"; }
+  else { out=pick(COMMON.filter(w=>!registry.has(w))); }
+  registry.add(out); renderRegistry();
+  $("sacResult").innerHTML=`🎲 Sacrifice #${sacs} → <span class="word ${cls}">${out}</span> <span class="dim">registered to you (simulated)</span>`;
+  $("stWords").textContent=registry.size; $("stCons").textContent=consLeft.length; $("stS").textContent=sDrawn?"yes":"no";
+};
+$("forgeBtn").onclick=()=>{
+  const a=$("w1").value.trim().toLowerCase(), b=$("w2").value.trim().toLowerCase();
+  if(!a||!b){$("forgeResult").textContent="Enter two registered words.";return;}
+  if(!registry.has(a)||!registry.has(b)){$("forgeResult").textContent=`"${!registry.has(a)?a:b}" is not in your registry — sacrifice or forge it first.`;return;}
+  const out=a+b; registry.add(out); renderRegistry();
+  const hyphenNote=(a.includes("-")||b.includes("-"))?" (hyphenated compound input earns no royalty — by design)":"";
+  $("forgeResult").innerHTML=`⚒️ add("${a}","${b}") → <span class="word owned">${out}</span> minted (simulated).<br><span class="dim">Fee 1,000 RF (simulated) → 500 to owner of "${a}", 500 to owner of "${b}"${hyphenNote}.</span>`;
+  log(`⚒️ "${a}" + "${b}" → "${out}" · 500/500 RF (simulated)${hyphenNote}`);
+};
+renderRegistry();
+</script>
+</body>
+</html>
