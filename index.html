@@ -36,15 +36,15 @@
 
 <div class="card">
   <h2>1 · Sacrifice gacha</h2>
-  <p class="dim">Simulates locking a tier-4 Gen 5 forever and rolling the weighted gacha: ~89% common word · ~10% rare · ~0.79% epic · ~0.2% consonant 1/1 · ~0.01% the letter <b>s</b> (1/1 chase). Letters draw without replacement.</p>
+  <p class="dim">Simulates locking a tier-4 Gen 5 forever and rolling the weighted gacha: ~89% common word · ~10% rare · ~0.79% epic · ~0.2% consonant 1/1 · ~0.01% the letter <b>s</b> (1/1 chase). Letters draw without replacement. <b>In this demo world all 26 letters and "-" are already minted</b> (vowels + "-" by the builder vault, consonants and <b>s</b> by other players), so a letter roll falls through to a common word.</p>
   <button id="sac">🔥 Sacrifice tier-4 Gen 5 (simulated)</button>
   <div class="result" id="sacResult"></div>
-  <div class="stats"><span>Sacrifices: <b id="stSac">0</b></span><span>Words drawn: <b id="stWords">0</b></span><span>Consonant 1/1s left: <b id="stCons">21</b></span><span>'s' drawn: <b id="stS">no</b></span></div>
+  <div class="stats"><span>Sacrifices: <b id="stSac">0</b></span><span>Words you own: <b id="stWords">0</b></span><span>Consonant 1/1s left: <b id="stCons">0</b></span><span>'s' drawn: <b id="stS">no</b></span></div>
 </div>
 
 <div class="card">
   <h2>2 · Forge (add)</h2>
-  <p class="dim"><code>add(word1, word2)</code> — permissionless, both inputs survive. Simulated forge fee: <b>1,000 RF → 500/500</b> to the current owners of the two direct inputs. Per the design, hyphenated compounds earn <b>no</b> royalty when used as forge inputs.</p>
+  <p class="dim"><code>add(word1, word2)</code> — permissionless, both inputs survive. Simulated forge fee: <b>1,000 RF → 500/500</b> to the current owners of the two direct inputs. Inputs can be <b>any</b> registered word, whoever owns it (try <code>cat</code> + <code>s</code>, or <code>sun</code> + <code>-</code>). Per the design, hyphenated compounds (not the bare "-") earn <b>no</b> royalty when used as forge inputs.</p>
   <div class="row">
     <input id="w1" placeholder="first word">
     <span style="color:var(--dim)">+</span>
@@ -57,8 +57,11 @@
 
 <div class="card">
   <h2>Your registry</h2>
-  <p class="dim">Words you own in this session (drawn or forged). Forge inputs must be registered words.</p>
+  <p class="dim">Words you own in this session (drawn or forged). You earn the royalty whenever someone forges with them.</p>
   <div id="registry"><span class="dim">Nothing yet — sacrifice first.</span></div>
+  <h2 style="margin-top:16px">World registry · letters</h2>
+  <p class="dim">Pre-minted before this session (simulated owners). Usable by anyone as forge inputs; their owners collect the royalty.</p>
+  <div id="world"></div>
 </div>
 
 <div class="card">
@@ -68,6 +71,8 @@
     <div>✔ Gacha odds match the README strawman (89 / 10 / 0.79 / 0.2 / 0.01)</div>
     <div>✔ Letters drawn without replacement · word draws skip registered words</div>
     <div>✔ Vowels + hyphen vaulted by builder — never drawn</div>
+    <div>✔ All 26 letters and "-" exist from the start, owned by others (simulated world state)</div>
+    <div>✔ Forging is permissionless: any registered word is a valid input, not just your own</div>
     <div>✘ Randomness is Math.random here; on-chain VRF (or commit-reveal) is future work</div>
     <div>✘ Demo dictionary is 210 curated words; full ~10,000-word list is future work</div>
   </div>
@@ -78,36 +83,47 @@ const COMMON=["cat","dog","sun","moon","star","tree","frog","bird","fish","cake"
 const RARE=["obsidian","moonstone","starfall","nightbloom","frostbrand","embersong","thunderhead","silverleaf","goldcrest","ironbark","stormcrow","ravenswing","wolfsbane","dragonscale","phoenixash","tidecaller","windwhisper","sunforge","moonglade","starweaver","frostbite","emberheart","stormbringer","nightshade","daybreak","duskfall","dawnchorus","twilight","midnight","eclipseborn","cometfall","nebulaheart","quasarlight","pulsarwave","galaxyspun","orbitdancer","auroraveil","zephyrwing","galewarden","monsoonborn","tsunamireach","avalanchefell","glacierdeep","volcanocore","canyonrunner","mesawalker","oasisbloom","deltarun","fjordmist"];
 const EPIC=["aetherdrake","voidsinger","starforged","moonwrought","sunshard","nightforge","doombringer","fateweaver","soulrender","dreamcatcher","mindflayer","timesplitter","realitybend","chaosborn","orderbound"];
 const CONS="bcdfghjklmnpqrstvwxyz".split("");
-const registry=new Set(); let sacs=0, consLeft=[...CONS], sDrawn=false;
+const YOU="you";
+const owners=new Map(); // word -> owner (simulated)
+"aeiou-".split("").forEach(l=>owners.set(l,"builder vault"));
+const FAKE=["0x3f9a…c21","0x71be…04d","0xa0c4…9e7","0x5d12…b3a","0xe8f0…611","0x29ac…7f5","0xc6d3…2a8"];
+[...CONS].forEach((l,i)=>owners.set(l,"player "+FAKE[i%FAKE.length]));
+const mine=()=>[...owners].filter(([,o])=>o===YOU).map(([w])=>w);
+let sacs=0, consLeft=[], sDrawn=true; // every letter is already minted in this demo world
 const $=id=>document.getElementById(id);
 function pick(a){return a[Math.floor(Math.random()*a.length)];}
 function renderRegistry(){
-  const el=$("registry");
-  if(!registry.size){el.innerHTML='<span class="dim">Nothing yet — sacrifice first.</span>';return;}
-  el.innerHTML=[...registry].map(w=>`<span class="word ${w.length===1?"letter":""}">${w}</span>`).join("");
+  const el=$("registry"), m=mine();
+  el.innerHTML=m.length?m.map(w=>`<span class="word owned">${w}</span>`).join(""):'<span class="dim">Nothing yet — sacrifice or forge.</span>';
+  $("world").innerHTML=[..."abcdefghijklmnopqrstuvwxyz-"].map(l=>`<span class="word letter" title="owner: ${owners.get(l)}">${l}</span>`).join("")
+    +'<div class="dim" style="font-size:12px;margin-top:6px">vowels + "-": builder vault · consonants: other players (hover for owner)</div>';
 }
 function log(msg){const d=document.createElement("div");d.innerHTML=msg;$("forgeLog").prepend(d);}
 $("sac").onclick=()=>{
   sacs++; $("stSac").textContent=sacs;
   const r=Math.random()*10000; let out,cls="";
-  if(r<8900){ out=pick(COMMON.filter(w=>!registry.has(w))); }
-  else if(r<9900){ const pool=RARE.filter(w=>!registry.has(w)); out=pool.length?pick(pool):pick(COMMON); }
-  else if(r<9979){ const pool=EPIC.filter(w=>!registry.has(w)); out=pool.length?pick(pool):pick(RARE); }
+  if(r<8900){ out=pick(COMMON.filter(w=>!owners.has(w))); }
+  else if(r<9900){ const pool=RARE.filter(w=>!owners.has(w)); out=pool.length?pick(pool):pick(COMMON); }
+  else if(r<9979){ const pool=EPIC.filter(w=>!owners.has(w)); out=pool.length?pick(pool):pick(RARE); }
   else if(r<9999 && consLeft.length){ out=consLeft.splice(Math.floor(Math.random()*consLeft.length),1)[0]; cls="letter"; }
   else if(!sDrawn){ out="s"; sDrawn=true; cls="letter"; }
-  else { out=pick(COMMON.filter(w=>!registry.has(w))); }
-  registry.add(out); renderRegistry();
+  else { out=pick(COMMON.filter(w=>!owners.has(w))); }
+  owners.set(out,YOU); renderRegistry();
   $("sacResult").innerHTML=`🎲 Sacrifice #${sacs} → <span class="word ${cls}">${out}</span> <span class="dim">registered to you (simulated)</span>`;
-  $("stWords").textContent=registry.size; $("stCons").textContent=consLeft.length; $("stS").textContent=sDrawn?"yes":"no";
+  $("stWords").textContent=mine().length; $("stCons").textContent=consLeft.length; $("stS").textContent=sDrawn?"yes":"no";
 };
 $("forgeBtn").onclick=()=>{
   const a=$("w1").value.trim().toLowerCase(), b=$("w2").value.trim().toLowerCase();
   if(!a||!b){$("forgeResult").textContent="Enter two registered words.";return;}
-  if(!registry.has(a)||!registry.has(b)){$("forgeResult").textContent=`"${!registry.has(a)?a:b}" is not in your registry — sacrifice or forge it first.`;return;}
-  const out=a+b; registry.add(out); renderRegistry();
-  const hyphenNote=(a.includes("-")||b.includes("-"))?" (hyphenated compound input earns no royalty — by design)":"";
-  $("forgeResult").innerHTML=`⚒️ add("${a}","${b}") → <span class="word owned">${out}</span> minted (simulated).<br><span class="dim">Fee 1,000 RF (simulated) → 500 to owner of "${a}", 500 to owner of "${b}"${hyphenNote}.</span>`;
-  log(`⚒️ "${a}" + "${b}" → "${out}" · 500/500 RF (simulated)${hyphenNote}`);
+  if(!owners.has(a)||!owners.has(b)){$("forgeResult").textContent=`"${!owners.has(a)?a:b}" is not a registered word yet — sacrifice or forge it first.`;return;}
+  const out=a+b;
+  if(owners.has(out)){$("forgeResult").textContent=`"${out}" already exists (owner: ${owners.get(out)}). Every word is a 1/1.`;return;}
+  owners.set(out,YOU); renderRegistry(); $("stWords").textContent=mine().length;
+  const who=w=>owners.get(w)===YOU?"you":owners.get(w);
+  const compound=w=>w.length>1&&w.includes("-");
+  const hyphenNote=(compound(a)||compound(b))?" (hyphenated compound input earns no royalty — by design)":"";
+  $("forgeResult").innerHTML=`⚒️ add("${a}","${b}") → <span class="word owned">${out}</span> minted to you (simulated).<br><span class="dim">Fee 1,000 RF (simulated) → 500 to "${a}" (${who(a)}), 500 to "${b}" (${who(b)})${hyphenNote}.</span>`;
+  log(`⚒️ "${a}" + "${b}" → "${out}" · 500 → ${who(a)} / 500 → ${who(b)} (simulated)${hyphenNote}`);
 };
 renderRegistry();
 </script>
